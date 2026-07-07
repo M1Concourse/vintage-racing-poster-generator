@@ -1,0 +1,9 @@
+{
+  "name": "asf-vintage-poster-generator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Fan Vintage Racing Poster Generator for the American Speed Festival at M1 Concourse.",
+  "scripts": {
+    "dev": "vercel dev"
+  }
+}

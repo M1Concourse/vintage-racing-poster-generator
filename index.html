@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vintage Racing Poster Generator | M1 Concourse × American Speed Festival</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --m1-red: #d0021b;
+    --m1-black: #111111;
+    --m1-white: #ffffff;
+    --m1-gray: #f4f4f4;
+    --m1-gray-mid: #cccccc;
+    --m1-gray-dark: #555555;
+    --poster-cream: #f2e8d5;
+    --poster-teal: #1c4f4a;
+    --poster-mustard: #d9a441;
+    --radius: 8px;
+    --radius-lg: 14px;
+  }
+
+  body {
+    font-family: 'Archivo', sans-serif;
+    background: var(--m1-black);
+    color: var(--m1-white);
+    margin: 0;
+    padding: 0;
+  }
+
+  #main-content { display: flex; flex-direction: column; }
+  main {
+    flex: 1;
+    max-width: 780px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* ── Header ── */
+  header {
+    background: #000000;
+    border-bottom: 3px solid var(--m1-red);
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .header-title { font-weight: 900; font-size: 16px; letter-spacing: 0.5px; }
+  .event-badge {
+    margin-left: auto;
+    background: var(--m1-red);
+    color: var(--m1-white);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 4px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+    border-bottom: 1px solid #222;
+    padding: 24px 24px 20px;
+    text-align: center;
+  }
+  .hero-eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--m1-red); margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-size: clamp(26px, 5vw, 44px); font-weight: 900; line-height: 1.05;
+    color: var(--m1-white); margin-bottom: 12px;
+  }
+  .hero h1 em { color: var(--m1-red); font-style: normal; }
+  .hero p { font-size: 15px; color: #aaa; max-width: 480px; margin: 0 auto; line-height: 1.6; }
+
+  /* ── Steps indicator ── */
+  .steps-bar { display: flex; justify-content: center; gap: 0; padding: 20px 24px 0; background: #0d0d0d; }
+  .step-item {
+    display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600;
+    letter-spacing: 1px; text-transform: uppercase; color: #444; padding: 8px 16px;
+    border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s;
+  }
+  .step-item.active { color: var(--m1-white); border-color: var(--m1-red); }
+  .step-item .num {
+    width: 18px; height: 18px; border-radius: 50%; background: #333; color: #999;
+    display: flex; align-items: center; justify-content: center; font-size: 10px;
+  }
+  .step-item.active .num { background: var(--m1-red); color: #fff; }
+
+  /* ── Style rail (era selector) ── */
+  .style-rail { padding: 24px; background: #0d0d0d; }
+  .style-rail-title { font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #aaa; margin-bottom: 14px; text-align: center; }
+  .style-grid { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; justify-content: center; flex-wrap: wrap; }
+  .style-card {
+    width: 128px; flex-shrink: 0; border: 2px solid transparent; border-radius: var(--radius-lg);
+    background: #1a1a1a; cursor: pointer; overflow: hidden; text-align: center; transition: border-color 0.2s, transform 0.15s;
+  }
+  .style-card:hover { transform: translateY(-2px); }
+  .style-card.selected { border-color: var(--m1-red); }
+  .style-swatch { height: 76px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+  .style-card-title { font-size: 12px; font-weight: 700; padding: 8px 6px 10px; }
+  .style-card-sub { font-size: 10px; color: #888; padding: 0 6px 8px; line-height: 1.3; }
+
+  /* ── Photo capture ── */
+  .photo-section { padding: 24px; }
+  .photo-options { display: flex; gap: 12px; margin-bottom: 14px; }
+  .photo-option {
+    flex: 1; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: var(--radius-lg);
+    padding: 18px 10px; text-align: center; cursor: pointer; transition: border-color 0.2s;
+  }
+  .photo-option:hover { border-color: var(--m1-red); }
+  .photo-option-icon { font-size: 24px; margin-bottom: 8px; }
+  .photo-option-title { font-size: 15px; font-weight: 700; }
+
+  .capture-wrap, .upload-wrap { display: none; }
+  .capture-wrap.show, .upload-wrap.show { display: block; }
+  video#camera-preview, #photo-preview {
+    width: 100%; max-height: 360px; object-fit: cover; border-radius: var(--radius-lg); background: #000;
+  }
+  .capture-btn {
+    display: block; margin: 12px auto 0; width: 64px; height: 64px; border-radius: 50%;
+    background: var(--m1-white); border: 4px solid var(--m1-red); font-size: 22px; cursor: pointer;
+  }
+  .upload-drop {
+    border: 2px dashed #333; border-radius: var(--radius-lg); padding: 30px 16px; text-align: center; cursor: pointer;
+  }
+  .upload-title { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .upload-sub { font-size: 12px; color: #888; }
+
+  /* ── Generate CTA ── */
+  .cta-wrap { padding: 8px 24px 24px; }
+  .generate-btn {
+    width: 100%; background: var(--m1-red); color: #fff; border: none; padding: 16px;
+    font-size: 16px; font-weight: 800; letter-spacing: 0.5px; border-radius: var(--radius);
+    cursor: pointer; text-transform: uppercase;
+  }
+  .generate-btn:disabled { background: #444; cursor: not-allowed; }
+
+  /* ── Generating ── */
+  .gen-loading { display: none; text-align: center; padding: 40px 24px; }
+  .gen-loading.show { display: block; }
+  .gen-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .gen-sub { color: #888; font-size: 13px; margin-bottom: 20px; }
+  .spinner {
+    width: 44px; height: 44px; border: 4px solid #333; border-top-color: var(--m1-red);
+    border-radius: 50%; margin: 0 auto; animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Result ── */
+  .result-wrap { display: none; padding: 24px; text-align: center; }
+  .result-wrap.show { display: block; }
+  #poster-canvas { width: 100%; max-width: 480px; border-radius: var(--radius); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+  .result-actions { display: flex; gap: 10px; max-width: 480px; margin: 20px auto 0; }
+  .result-btn {
+    flex: 1; padding: 14px; border-radius: var(--radius); font-weight: 700; font-size: 13px;
+    text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; border: none;
+  }
+  .result-btn.primary { background: var(--m1-red); color: #fff; }
+  .result-btn.secondary { background: #2a2a2a; color: #fff; border: 1px solid #3a3a3a; }
+  .ai-caption { max-width: 480px; margin: 16px auto 0; font-size: 12px; color: #777; line-height: 1.5; }
+  .ai-caption-label { color: var(--m1-red); font-weight: 700; margin-bottom: 4px; }
+  .try-again { margin-top: 16px; background: none; border: none; color: #888; text-decoration: underline; cursor: pointer; font-size: 13px; }
+
+  /* ── Info panel ── */
+  .info-panel { padding: 0 24px 32px; }
+  .info-box { background: #1a1a1a; border-radius: var(--radius-lg); padding: 18px; font-size: 12px; color: #999; line-height: 1.6; }
+  .info-box h2 { font-size: 13px; color: #fff; margin-bottom: 8px; }
+
+  #error-banner {
+    display: none; background: #3a1010; border: 1px solid var(--m1-red); color: #ffb3b3;
+    padding: 12px 16px; border-radius: var(--radius); margin: 0 24px 16px; font-size: 13px;
+  }
+  #error-banner.show { display: block; }
+</style>
+</head>
+<body>
+<div id="main-content">
+<header>
+  <div class="header-title">M1 CONCOURSE</div>
+  <div class="event-badge">American Speed Festival</div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-eyebrow">AI Fan Experience</div>
+    <h1>Become the <em>Poster.</em></h1>
+    <p>Upload a photo and we'll turn you into the star of a hand-illustrated, retro racing poster &mdash; straight out of a 1960s Le Mans or Monaco program cover. Print it, frame it, make it merch.</p>
+  </section>
+
+  <div class="steps-bar">
+    <div class="step-item active" id="step-1"><span class="num">1</span> Pick a Style</div>
+    <div class="step-item" id="step-2"><span class="num">2</span> Add Photo</div>
+    <div class="step-item" id="step-3"><span class="num">3</span> Your Poster</div>
+  </div>
+
+  <div id="error-banner"></div>
+
+  <!-- STEP 1: Era / style selection -->
+  <section class="style-rail" id="style-section">
+    <div class="style-rail-title">Choose Your Poster Era</div>
+    <div class="style-grid" id="style-grid">
+      <!-- populated by JS -->
+    </div>
+  </section>
+
+  <!-- STEP 2: Photo capture -->
+  <section class="photo-section" id="photo-section" style="display:none;">
+    <div class="photo-options">
+      <div class="photo-option" id="option-capture">
+        <div class="photo-option-icon">📷</div>
+        <div class="photo-option-title">Take a Selfie</div>
+      </div>
+      <div class="photo-option" id="option-upload">
+        <div class="photo-option-icon">🖼️</div>
+        <div class="photo-option-title">Upload a Photo</div>
+      </div>
+    </div>
+
+    <div class="capture-wrap" id="capture-wrap">
+      <video id="camera-preview" autoplay playsinline></video>
+      <button class="capture-btn" id="capture-btn" type="button" title="Take photo">📸</button>
+      <canvas id="capture-canvas" style="display:none;"></canvas>
+    </div>
+
+    <div class="upload-wrap" id="upload-wrap">
+      <div class="upload-drop" id="upload-drop">
+        <div class="upload-title">Tap to choose a photo</div>
+        <div class="upload-sub">Face forward, good lighting, JPG or PNG</div>
+      </div>
+      <input type="file" id="file-input" accept="image/*" style="display:none;" />
+    </div>
+
+    <img id="photo-preview" style="display:none; margin-top: 14px;" />
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-wrap" id="cta-wrap" style="display:none;">
+    <button class="generate-btn" id="generate-btn" disabled>Generate My Poster</button>
+  </div>
+
+  <!-- Generating state -->
+  <div class="gen-loading" id="gen-loading">
+    <div class="spinner"></div>
+    <div class="gen-title" style="margin-top:20px;">Illustrating your poster…</div>
+    <div class="gen-sub" id="gen-status">Sending your photo to the studio…</div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-wrap" id="result-wrap">
+    <canvas id="poster-canvas" width="1000" height="1400"></canvas>
+    <div class="result-actions">
+      <button class="result-btn primary" id="download-btn">Download</button>
+      <button class="result-btn secondary" id="share-btn">Share</button>
+    </div>
+    <div class="ai-caption">
+      <div class="ai-caption-label">✦ Poster Concept</div>
+      <div id="ai-caption-text"></div>
+    </div>
+    <button class="try-again" id="try-again-btn">Start over with a new photo</button>
+  </div>
+
+  <section class="info-panel">
+    <div class="info-box">
+      <h2>Before You Generate</h2>
+      Your uploaded photo is processed in real time to generate your poster illustration. Photos are not stored on M1 Concourse servers beyond the duration of the generation process. Images are transmitted to a third-party AI service (fal.ai) solely for generation purposes.
+    </div>
+  </section>
+</main>
+</div>
+
+<script>
+// ============================================================
+// Vintage Racing Poster Generator
+// Companion app to the ASF Fan Selfie Generator — same fal.ai
+// pipeline, restyled for retro Le Mans / Monaco poster art.
+// ============================================================
+
+// All fal.ai calls go through /api/fal/* (see api/fal/[...path].js), which
+// attaches the real fal.ai API key server-side. The key is never present
+// in this file or anywhere in the browser.
+const FAL_PROXY_BASE = '/api/fal';
+
+// ── Poster eras/styles. Each has its own illustration prompt. ──
+const POSTER_STYLES = [
+  {
+    id: "le_mans_60s",
+    name: "Le Mans '66",
+    swatch: "🏁",
+    sub: "Bold flat color, halftone shading",
+    prompt: "1960s French Le Mans 24 Hours race poster illustration, flat bold gouache colors, halftone dot shading, dynamic diagonal composition, art deco condensed lettering, warm cream and burnt orange palette, vintage travel-poster linework"
+  },
+  {
+    id: "monaco_gp",
+    name: "Monaco GP",
+    swatch: "🎗️",
+    sub: "Riviera pastels, elegant type",
+    prompt: "1960s Monaco Grand Prix poster illustration, Mediterranean pastel palette of teal aqua and coral, elegant serif and script lettering, harbor and hillside skyline silhouette, mid-century travel poster linework, flat vector shading"
+  },
+  {
+    id: "mille_miglia",
+    name: "Mille Miglia",
+    swatch: "🏛️",
+    sub: "Italian racing red & cream",
+    prompt: "vintage Mille Miglia Italian road race poster illustration, racing red and cream color palette, bold italic sans-serif lettering, sweeping speed lines, mid-century Italian graphic design, flat gouache texture"
+  },
+  {
+    id: "indy_50s",
+    name: "Indy '58",
+    swatch: "🏆",
+    sub: "American diner-era boldness",
+    prompt: "1950s American Indianapolis 500 poster illustration, bold primary colors of red white and blue, chunky retro lettering, checkered flag motif, mid-century American commercial illustration style, flat shading with subtle grain"
+  },
+  {
+    id: "targa_florio",
+    name: "Targa Florio",
+    swatch: "🌄",
+    sub: "Sicilian mountain-road drama",
+    prompt: "vintage Targa Florio Sicilian mountain race poster illustration, warm ochre and olive palette, dramatic winding mountain road backdrop, hand-lettered condensed type, mid-century European poster linework"
+  }
+];
+
+let selectedStyle = null;
+let uploadedPhotoDataUrl = null;
+let cameraStream = null;
+
+// ── Render style cards ──
+const styleGrid = document.getElementById('style-grid');
+POSTER_STYLES.forEach(style => {
+  const card = document.createElement('div');
+  card.className = 'style-card';
+  card.dataset.id = style.id;
+  card.innerHTML = `
+    <div class="style-swatch">${style.swatch}</div>
+    <div class="style-card-title">${style.name}</div>
+    <div class="style-card-sub">${style.sub}</div>
+  `;
+  card.addEventListener('click', () => selectStyle(style.id));
+  styleGrid.appendChild(card);
+});
+
+function selectStyle(id) {
+  selectedStyle = POSTER_STYLES.find(s => s.id === id);
+  document.querySelectorAll('.style-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.id === id);
+  });
+  document.getElementById('photo-section').style.display = 'block';
+  document.getElementById('cta-wrap').style.display = 'block';
+  setStep(2);
+  maybeEnableGenerate();
+  document.getElementById('photo-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function setStep(n) {
+  document.querySelectorAll('.step-item').forEach((el, i) => el.classList.toggle('active', i < n));
+}
+
+// ── Photo capture / upload UI ──
+const optionCapture = document.getElementById('option-capture');
+const optionUpload = document.getElementById('option-upload');
+const captureWrap = document.getElementById('capture-wrap');
+const uploadWrap = document.getElementById('upload-wrap');
+const cameraPreview = document.getElementById('camera-preview');
+const captureCanvas = document.getElementById('capture-canvas');
+const captureBtn = document.getElementById('capture-btn');
+const uploadDrop = document.getElementById('upload-drop');
+const fileInput = document.getElementById('file-input');
+const photoPreview = document.getElementById('photo-preview');
+
+optionCapture.addEventListener('click', async () => {
+  uploadWrap.classList.remove('show');
+  captureWrap.classList.add('show');
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+    cameraPreview.srcObject = cameraStream;
+  } catch (e) {
+    showError('Could not access camera. Try uploading a photo instead.');
+  }
+});
+
+optionUpload.addEventListener('click', () => {
+  captureWrap.classList.remove('show');
+  uploadWrap.classList.add('show');
+  stopCamera();
+});
+
+uploadDrop.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => setPhoto(ev.target.result);
+  reader.readAsDataURL(file);
+});
+
+captureBtn.addEventListener('click', () => {
+  const w = cameraPreview.videoWidth, h = cameraPreview.videoHeight;
+  captureCanvas.width = w;
+  captureCanvas.height = h;
+  const ctx = captureCanvas.getContext('2d');
+  ctx.drawImage(cameraPreview, 0, 0, w, h);
+  setPhoto(captureCanvas.toDataURL('image/jpeg', 0.92));
+  stopCamera();
+});
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+}
+
+function setPhoto(dataUrl) {
+  uploadedPhotoDataUrl = dataUrl;
+  photoPreview.src = dataUrl;
+  photoPreview.style.display = 'block';
+  captureWrap.classList.remove('show');
+  maybeEnableGenerate();
+}
+
+function maybeEnableGenerate() {
+  document.getElementById('generate-btn').disabled = !(selectedStyle && uploadedPhotoDataUrl);
+}
+
+function showError(msg) {
+  const banner = document.getElementById('error-banner');
+  banner.textContent = msg;
+  banner.classList.add('show');
+}
+function clearError() {
+  document.getElementById('error-banner').classList.remove('show');
+}
+
+// ── Generate ──
+document.getElementById('generate-btn').addEventListener('click', generatePoster);
+document.getElementById('try-again-btn').addEventListener('click', () => location.reload());
+
+const GEN_STATUS_MESSAGES = [
+  'Sending your photo to the studio…',
+  'Sketching your likeness in ink…',
+  'Laying down flat poster colors…',
+  'Hand-lettering the event type…',
+  'Finishing halftone shading…'
+];
+
+async function generatePoster() {
+  clearError();
+  document.getElementById('photo-section').style.display = 'none';
+  document.getElementById('style-section').style.display = 'none';
+  document.getElementById('cta-wrap').style.display = 'none';
+  document.getElementById('gen-loading').classList.add('show');
+  setStep(3);
+
+  let statusIdx = 0;
+  const statusEl = document.getElementById('gen-status');
+  const statusTimer = setInterval(() => {
+    statusIdx = (statusIdx + 1) % GEN_STATUS_MESSAGES.length;
+    statusEl.textContent = GEN_STATUS_MESSAGES[statusIdx];
+  }, 3200);
+
+  try {
+    // ── Step 1: submit fan photo + style prompt to fal.ai flux-pro/kontext ──
+    // Single-image edit endpoint restyles the fan's photo into illustration,
+    // preserving pose/identity while fully re-rendering as poster artwork.
+    const prompt = `${selectedStyle.prompt}. Transform the person in this photo into the hero figure of the poster: a stylized, hand-illustrated portrait in a racing driver's stance, rendered fully in the described illustration style (not photographic). Preserve their general likeness, hairstyle, and expression as an illustrated character. Include a classic vintage race car in the scene. Leave clean open space near the top and bottom of the composition for poster title lettering to be added afterward. No modern logos, no text baked into the image.`;
+
+    const submitResp = await fetch(`${FAL_PROXY_BASE}/fal-ai/flux-pro/kontext`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt,
+        image_url: uploadedPhotoDataUrl,
+        guidance_scale: 3.5,
+        num_images: 1,
+        output_format: 'jpeg'
+      })
+    });
+
+    if (!submitResp.ok) {
+      const errText = await submitResp.text();
+      throw new Error(`fal.ai error ${submitResp.status}: ${errText}`);
+    }
+    const queueData = await submitResp.json();
+    if (!queueData.request_id) throw new Error('No request_id from fal.ai: ' + JSON.stringify(queueData));
+
+    // ── Step 2: poll for completion ──
+    const imageUrl = await pollFal(queueData.request_id, queueData.status_url, queueData.response_url);
+
+    // ── Step 3: composite onto vintage poster layout with title/date lettering ──
+    const scene = `A ${selectedStyle.name}-style illustrated racing poster starring the fan as the featured driver, complete with vintage typography for the American Speed Festival at M1 Concourse.`;
+    await buildPosterComposite(imageUrl, selectedStyle, scene);
+
+    clearInterval(statusTimer);
+    document.getElementById('gen-loading').classList.remove('show');
+    document.getElementById('result-wrap').classList.add('show');
+    document.getElementById('ai-caption-text').textContent = scene;
+
+  } catch (err) {
+    clearInterval(statusTimer);
+    document.getElementById('gen-loading').classList.remove('show');
+    document.getElementById('photo-section').style.display = 'block';
+    document.getElementById('style-section').style.display = 'block';
+    document.getElementById('cta-wrap').style.display = 'block';
+    setStep(2);
+    showError('Something went wrong generating your poster. Please try again. (' + err.message + ')');
+    console.error(err);
+  }
+}
+
+function toProxyUrl(falUrl) {
+  return falUrl ? falUrl.replace('https://queue.fal.run', FAL_PROXY_BASE) : null;
+}
+
+async function pollFal(requestId, statusUrl, responseUrl) {
+  const pollUrl = toProxyUrl(statusUrl) || `${FAL_PROXY_BASE}/fal-ai/flux-pro/kontext/requests/${requestId}/status`;
+  const resultUrl = toProxyUrl(responseUrl) || `${FAL_PROXY_BASE}/fal-ai/flux-pro/kontext/requests/${requestId}`;
+
+  const start = Date.now();
+  while (Date.now() - start < 120000) {
+    const resp = await fetch(pollUrl);
+    if (!resp.ok) throw new Error(`fal.ai poll failed: ${resp.status}`);
+    const data = await resp.json();
+
+    if (data.status === 'COMPLETED') {
+      const resultResp = await fetch(resultUrl);
+      if (!resultResp.ok) throw new Error(`fal.ai result fetch failed: ${resultResp.status}`);
+      const result = await resultResp.json();
+      const imgUrl = result?.images?.[0]?.url || result?.image?.url;
+      if (!imgUrl) throw new Error('No image URL in fal.ai response: ' + JSON.stringify(result));
+      return imgUrl;
+    } else if (data.status === 'FAILED' || data.status === 'ERROR') {
+      throw new Error('fal.ai generation failed: ' + (data.error || JSON.stringify(data)));
+    }
+    await new Promise(r => setTimeout(r, 2500));
+  }
+  throw new Error('fal.ai timed out after 2 minutes');
+}
+
+// ── Canvas Composite — wraps the fal.ai illustration in vintage poster
+//    typography, matching the era's palette and print-ready proportions ──
+async function loadImageCORS(url) {
+  const resp = await fetch(url);
+  const blob = await resp.blob();
+  const objUrl = URL.createObjectURL(blob);
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = objUrl;
+  });
+}
+
+const ERA_PALETTES = {
+  le_mans_60s:   { bg: '#f2e8d5', ink: '#2a2a26', accent: '#c1440e' },
+  monaco_gp:     { bg: '#eef4f2', ink: '#1c4f4a', accent: '#c1440e' },
+  mille_miglia:  { bg: '#f4ece0', ink: '#7a1c1c', accent: '#f2e8d5' },
+  indy_50s:      { bg: '#f7f1e3', ink: '#1c2a4f', accent: '#c1440e' },
+  targa_florio:  { bg: '#f2e6cc', ink: '#5c4522', accent: '#8a3b1c' }
+};
+
+async function buildPosterComposite(generatedImageUrl, style, sceneText) {
+  const canvas = document.getElementById('poster-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const palette = ERA_PALETTES[style.id] || ERA_PALETTES.le_mans_60s;
+
+  // Background field
+  ctx.fillStyle = palette.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Illustration frame
+  const img = await loadImageCORS(generatedImageUrl);
+  const frameX = 60, frameY = 220, frameW = W - 120, frameH = 900;
+  const scale = Math.max(frameW / img.width, frameH / img.height);
+  const drawW = img.width * scale, drawH = img.height * scale;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(frameX, frameY, frameW, frameH);
+  ctx.clip();
+  ctx.drawImage(img, frameX + (frameW - drawW) / 2, frameY + (frameH - drawH) / 2, drawW, drawH);
+  ctx.restore();
+
+  // Inner border
+  ctx.strokeStyle = palette.ink;
+  ctx.lineWidth = 6;
+  ctx.strokeRect(frameX, frameY, frameW, frameH);
+
+  // Outer poster border
+  ctx.strokeStyle = palette.ink;
+  ctx.lineWidth = 14;
+  ctx.strokeRect(24, 24, W - 48, H - 48);
+
+  // Top title block
+  ctx.fillStyle = palette.ink;
+  ctx.textAlign = 'center';
+  ctx.font = "700 34px Oswald, sans-serif";
+  ctx.fillText('AMERICAN SPEED FESTIVAL', W / 2, 100);
+
+  ctx.font = "900 84px Oswald, sans-serif";
+  ctx.fillStyle = palette.accent;
+  ctx.fillText(style.name.toUpperCase(), W / 2, 180);
+
+  // Bottom info block
+  ctx.fillStyle = palette.ink;
+  ctx.font = "600 26px Oswald, sans-serif";
+  ctx.fillText('M1 CONCOURSE — PONTIAC, MICHIGAN', W / 2, frameY + frameH + 60);
+
+  ctx.font = "500 18px Archivo, sans-serif";
+  ctx.fillStyle = palette.ink;
+  wrapText(ctx, 'A weekend of speed, style, and community on track and off.', W / 2, frameY + frameH + 100, W - 160, 24);
+
+  ctx.font = "700 16px Oswald, sans-serif";
+  ctx.fillStyle = palette.accent;
+  ctx.fillText('OCTOBER 2–4', W / 2, H - 60);
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+  let curY = y;
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + ' ';
+    if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+      ctx.fillText(line, x, curY);
+      line = words[n] + ' ';
+      curY += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line, x, curY);
+}
+
+// ── Download / Share ──
+document.getElementById('download-btn').addEventListener('click', () => {
+  const canvas = document.getElementById('poster-canvas');
+  const link = document.createElement('a');
+  link.download = `asf-vintage-poster-${selectedStyle ? selectedStyle.id : 'poster'}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+});
+
+document.getElementById('share-btn').addEventListener('click', async () => {
+  const canvas = document.getElementById('poster-canvas');
+  canvas.toBlob(async (blob) => {
+    const file = new File([blob], 'asf-vintage-poster.png', { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'My American Speed Festival Poster',
+          text: 'I got turned into a vintage racing poster at M1 Concourse!'
+        });
+      } catch (e) { /* user cancelled */ }
+    } else {
+      showError('Sharing isn\'t supported on this device — use Download instead.');
+    }
+  }, 'image/png');
+});
+</script>
+</body>
+</html>
