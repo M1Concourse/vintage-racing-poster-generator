@@ -281,11 +281,15 @@
 // pipeline, restyled for retro Le Mans / Monaco poster art.
 // ============================================================
 
-// All fal.ai calls go through the fixed /api/fal endpoint (see api/fal.js),
-// which attaches the real fal.ai API key server-side and forwards to the
-// target URL passed via a query string. The key is never present in this
-// file or anywhere in the browser.
-const FAL_PROXY = '/api/fal';
+// Direct fal.ai calls from the browser — same pattern as the original
+// Fan Selfie Generator. Replace the placeholder below with your real
+// fal.ai key from fal.ai/dashboard/keys before deploying.
+//
+// NOTE: this key will be visible to anyone who views this page's source.
+// That's an accepted tradeoff here to match the existing app's setup —
+// if you ever want it hidden server-side again, say so and it can be
+// swapped back to a proxy pattern.
+const FAL_KEY = 'PASTE-YOUR-FAL-AI-KEY-HERE';
 
 // ── Poster eras/styles. Each has its own illustration prompt. ──
 const POSTER_STYLES = [
@@ -470,9 +474,12 @@ async function generatePoster() {
     // preserving pose/identity while fully re-rendering as poster artwork.
     const prompt = `${selectedStyle.prompt}. Transform the person in this photo into the hero figure of the poster: a stylized, hand-illustrated portrait in a racing driver's stance, rendered fully in the described illustration style (not photographic). Preserve their general likeness, hairstyle, and expression as an illustrated character. Include a classic vintage race car in the scene. Leave clean open space near the top and bottom of the composition for poster title lettering to be added afterward. No modern logos, no text baked into the image.`;
 
-    const submitResp = await fetch(`${FAL_PROXY}?path=${encodeURIComponent('fal-ai/flux-pro/kontext')}`, {
+    const submitResp = await fetch('https://queue.fal.run/fal-ai/flux-pro/kontext', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Key ${FAL_KEY}`,
+      },
       body: JSON.stringify({
         prompt,
         image_url: uploadedPhotoDataUrl,
@@ -513,24 +520,18 @@ async function generatePoster() {
   }
 }
 
-function toProxyUrl(falUrl) {
-  return falUrl ? `${FAL_PROXY}?url=${encodeURIComponent(falUrl)}` : null;
-}
-
 async function pollFal(requestId, statusUrl, responseUrl) {
-  const fallbackStatus = `https://queue.fal.run/fal-ai/flux-pro/kontext/requests/${requestId}/status`;
-  const fallbackResult = `https://queue.fal.run/fal-ai/flux-pro/kontext/requests/${requestId}`;
-  const pollUrl = toProxyUrl(statusUrl) || toProxyUrl(fallbackStatus);
-  const resultUrl = toProxyUrl(responseUrl) || toProxyUrl(fallbackResult);
+  const pollUrl = statusUrl || `https://queue.fal.run/fal-ai/flux-pro/kontext/requests/${requestId}/status`;
+  const resultUrl = responseUrl || `https://queue.fal.run/fal-ai/flux-pro/kontext/requests/${requestId}`;
 
   const start = Date.now();
   while (Date.now() - start < 120000) {
-    const resp = await fetch(pollUrl);
+    const resp = await fetch(pollUrl, { headers: { 'Authorization': `Key ${FAL_KEY}` } });
     if (!resp.ok) throw new Error(`fal.ai poll failed: ${resp.status}`);
     const data = await resp.json();
 
     if (data.status === 'COMPLETED') {
-      const resultResp = await fetch(resultUrl);
+      const resultResp = await fetch(resultUrl, { headers: { 'Authorization': `Key ${FAL_KEY}` } });
       if (!resultResp.ok) throw new Error(`fal.ai result fetch failed: ${resultResp.status}`);
       const result = await resultResp.json();
       const imgUrl = result?.images?.[0]?.url || result?.image?.url;
