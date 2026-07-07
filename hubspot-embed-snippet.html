@@ -1,0 +1,29 @@
+<style>
+  body, .body-wrapper, .content-wrapper, #hs_cos_wrapper_main, .page-center {
+    background: #111111 !important;
+  }
+  #m1-poster-frame {
+    width: 100%;
+    border: none;
+    display: block;
+    background: #111111;
+    overflow: hidden;
+  }
+</style>
+<iframe
+  id="m1-poster-frame"
+  src="https://vintage-racing-poster-generator.vercel.app/"
+  width="100%"
+  height="100%"
+  frameborder="0"
+  allow="camera; clipboard-write"
+  scrolling="no">
+</iframe>
+<script>
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'm1-poster-height') {
+      var frame = document.getElementById('m1-poster-frame');
+      if (frame) frame.style.height = e.data.height + 'px';
+    }
+  });
+</script>
