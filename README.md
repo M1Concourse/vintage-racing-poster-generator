@@ -1,3 +1,4 @@
+[README.md](https://github.com/user-attachments/files/29747313/README.md)
 # ASF Vintage Racing Poster Generator
 
 Fan-facing AI experience for the American Speed Festival at M1 Concourse.
@@ -25,7 +26,7 @@ git init
 git add .
 git commit -m "Vintage racing poster generator"
 git branch -M main
-git remote add origin https://github.com/M1Concourse/asf-vintage-poster-generator.git
+git remote add origin https://github.com/M1Concourse/vintage-racing-poster-generator.git
 git push -u origin main
 ```
 
@@ -48,7 +49,7 @@ Before your first commit, double check `git status` doesn't show `.env` or
 
 Your app will be live at `<project-name>.vercel.app`. Rename the project
 in Vercel settings if you want a specific subdomain
-(e.g. `asf-vintage-poster.vercel.app`).
+(e.g. `vintage-racing-poster-generator.vercel.app`).
 
 ## 3. Local development (optional)
 
