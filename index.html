@@ -662,6 +662,21 @@ document.getElementById('share-btn').addEventListener('click', async () => {
     }
   }, 'image/png');
 });
+
+// ── Report height to parent window so HubSpot iframe embeds can auto-size ──
+function sendHeight() {
+  const children = document.body.children;
+  let h = 0;
+  for (let i = 0; i < children.length; i++) {
+    const rect = children[i].getBoundingClientRect();
+    const bottom = rect.bottom + window.scrollY;
+    if (bottom > h) h = bottom;
+  }
+  h = Math.ceil(h) + 8; // small buffer to avoid scrollbar
+  window.parent.postMessage({ type: 'm1-poster-height', height: h }, '*');
+}
+new ResizeObserver(sendHeight).observe(document.body);
+window.addEventListener('load', sendHeight);
 </script>
 </body>
 </html>
